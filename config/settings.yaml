@@ -1,0 +1,29 @@
+# Non-secret configuration. Secrets go in .env.
+
+channel:
+  name: "TBD"
+  lanes:
+    - business-story
+    - how-tech-works
+  audience: "curious people with no technical background"
+  tone: "clear, friendly, story-driven"
+
+paths:
+  videos_dir: videos
+  prompts_dir: config/prompts
+
+video:
+  target_minutes: 8
+  resolution: [1920, 1080]
+  fps: 30
+
+providers:
+  llm: claude
+  tts: local        # local | elevenlabs | openai
+  images: pexels
+
+automation:
+  # Stages that pause the pipeline for human review.
+  # Empty list = fully automatic.
+  gates: [script, assembly, upload]
+  upload_visibility: private   # private | unlisted | public

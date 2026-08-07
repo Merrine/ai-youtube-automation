@@ -1,0 +1,20 @@
+# secrets
+.env
+*.token.json
+client_secret*.json
+
+# generated content
+videos/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+dist/
+
+# os
+.DS_Store
