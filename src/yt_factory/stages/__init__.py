@@ -4,11 +4,11 @@ from yt_factory.stages.assembly import AssemblyStage
 from yt_factory.stages.base import Stage
 from yt_factory.stages.metadata import MetadataStage
 from yt_factory.stages.narration import NarrationStage
-from yt_factory.stages.placeholders import UploadStage
 from yt_factory.stages.research import ResearchStage
 from yt_factory.stages.script import ScriptStage
 from yt_factory.stages.thumbnail import ThumbnailStage
 from yt_factory.stages.topic import TopicStage
+from yt_factory.stages.upload import UploadStage
 from yt_factory.stages.visuals import VisualsStage
 
 ALL_STAGES: list[Stage] = [

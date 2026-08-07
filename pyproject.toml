@@ -16,6 +16,8 @@ dependencies = [
     "requests>=2.31",
     "mutagen>=1.47",
     "moviepy>=2.0",
+    "google-api-python-client>=2.100",
+    "google-auth-oauthlib>=1.2",
 ]
 
 [project.optional-dependencies]
