@@ -23,7 +23,8 @@ def settings(tmp_path: Path) -> Settings:
             "providers": {
                 "llm": "gemini",
                 "llm_model": "gemini-flash-latest",
-                "tts": "local",
+                "tts": "edge",
+                "tts_voice": "en-US-AndrewNeural",
                 "images": "pexels",
             },
             "automation": {"gates": ["script"], "upload_visibility": "private"},

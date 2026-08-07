@@ -36,6 +36,7 @@ class ProvidersConfig(BaseModel):
     llm: str
     llm_model: str
     tts: str
+    tts_voice: str
     images: str
 
 

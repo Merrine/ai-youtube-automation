@@ -1,7 +1,7 @@
-"""Placeholder stages for phases not yet built (media, assembly, upload).
+"""Placeholder stages for phases not yet built (assembly, upload).
 
 Each writes a small marker artifact so orchestration, gates, and resume
-logic stay exercisable end to end. Replaced in Phases 3-5.
+logic stay exercisable end to end. Replaced in Phases 4-5.
 """
 
 from __future__ import annotations
@@ -25,20 +25,8 @@ class _PlaceholderStage(Stage):
         )
 
 
-class NarrationStage(_PlaceholderStage):
-    name = "narration"
-
-
-class VisualsStage(_PlaceholderStage):
-    name = "visuals"
-
-
 class AssemblyStage(_PlaceholderStage):
     name = "assembly"
-
-
-class ThumbnailStage(_PlaceholderStage):
-    name = "thumbnail"
 
 
 class UploadStage(_PlaceholderStage):
