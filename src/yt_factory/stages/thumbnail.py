@@ -94,4 +94,14 @@ class ThumbnailStage(Stage):
         index = json.loads(visuals_path.read_text())
         if not index:
             return None
-        return ws.path / index[0]["file"]
+        stills = [v for v in index if v.get("type", "image") == "image"]
+        if stills:
+            return ws.path / stills[0]["file"]
+        # all visuals are video: grab the first frame of the first clip
+        from moviepy import VideoFileClip
+        from PIL import Image
+
+        frame_path = ws.file(".thumbnail_frame.png")
+        with VideoFileClip(str(ws.path / index[0]["file"])) as clip:
+            Image.fromarray(clip.get_frame(min(1.0, clip.duration / 2))).save(frame_path)
+        return frame_path

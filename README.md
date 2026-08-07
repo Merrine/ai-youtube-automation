@@ -40,8 +40,8 @@ mypy src      # types
 ## Status
 
 - [x] Phase 1 — skeleton: config, logging, workspace/manifest, pipeline, CLI
-- [ ] Phase 2 — content: topic, research, script, metadata (LLM)
-- [ ] Phase 3 — media: narration (TTS), visuals, thumbnail
-- [ ] Phase 4 — video assembly (MoviePy; requires ffmpeg)
+- [x] Phase 2 — content: topic, research, script, metadata (Gemini free tier)
+- [x] Phase 3 — media: narration (edge-tts), visuals (Pexels), thumbnail (Pillow)
+- [x] Phase 4 — video assembly (MoviePy + bundled ffmpeg, Ken Burns slideshow)
 - [ ] Phase 5 — YouTube upload (OAuth)
 - [ ] Phase 6 — automation: scheduler, notifications

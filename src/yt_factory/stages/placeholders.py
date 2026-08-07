@@ -1,7 +1,7 @@
-"""Placeholder stages for phases not yet built (assembly, upload).
+"""Placeholder stages for phases not yet built (upload).
 
 Each writes a small marker artifact so orchestration, gates, and resume
-logic stay exercisable end to end. Replaced in Phases 4-5.
+logic stay exercisable end to end. Replaced in Phase 5.
 """
 
 from __future__ import annotations
@@ -23,10 +23,6 @@ class _PlaceholderStage(Stage):
         ws.file(f".placeholder_{self.name}").write_text(
             f"placeholder output of stage '{self.name}'\n"
         )
-
-
-class AssemblyStage(_PlaceholderStage):
-    name = "assembly"
 
 
 class UploadStage(_PlaceholderStage):

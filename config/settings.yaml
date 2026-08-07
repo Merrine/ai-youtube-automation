@@ -3,7 +3,7 @@
 channel:
   name: "TBD"
   lanes:
-    - business-story
+    - ai-explained
     - how-tech-works
   audience: "curious people with no technical background"
   tone: "clear, friendly, story-driven"
@@ -16,6 +16,7 @@ video:
   target_minutes: 8
   resolution: [1920, 1080]
   fps: 30
+  max_visual_seconds: 6   # no visual stays on screen longer than this
 
 providers:
   llm: gemini

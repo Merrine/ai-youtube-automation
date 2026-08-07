@@ -30,6 +30,7 @@ class VideoConfig(BaseModel):
     target_minutes: int
     resolution: tuple[int, int]
     fps: int
+    max_visual_seconds: float = 6.0
 
 
 class ProvidersConfig(BaseModel):

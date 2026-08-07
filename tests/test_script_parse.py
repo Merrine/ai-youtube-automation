@@ -1,4 +1,4 @@
-from yt_factory.script_parse import parse_script
+from yt_factory.script_parse import parse_units
 
 SCRIPT = """## Hook
 
@@ -14,25 +14,32 @@ Atomic clocks keep the time.
 
 [VISUAL: atomic clock closeup]
 [VISUAL: control room with screens]
+
+They drift a tiny bit every day.
 """
 
 
-def test_parse_sections() -> None:
-    sections = parse_script(SCRIPT)
-    assert [s.title for s in sections] == ["Hook", "The Clocks"]
+def test_units_pair_text_with_following_cue() -> None:
+    units = parse_units(SCRIPT)
+    assert units[0].text == "Your phone talks to space."
+    assert units[0].cues == ["satellite orbiting earth"]
+    assert units[0].section == "Hook"
 
 
-def test_narration_excludes_visual_cues() -> None:
-    hook = parse_script(SCRIPT)[0]
-    assert "satellite orbiting" not in hook.narration
-    assert "Your phone talks to space." in hook.narration
-    assert "And it does it constantly." in hook.narration
+def test_trailing_text_without_cue_becomes_unit() -> None:
+    units = parse_units(SCRIPT)
+    assert units[1].text == "And it does it constantly."
+    assert units[1].cues == []
 
 
-def test_visual_cues_collected() -> None:
-    clocks = parse_script(SCRIPT)[1]
-    assert clocks.visuals == ["atomic clock closeup", "control room with screens"]
+def test_consecutive_cues_attach_to_same_unit() -> None:
+    units = parse_units(SCRIPT)
+    clocks = units[2]
+    assert clocks.section == "The Clocks"
+    assert clocks.cues == ["atomic clock closeup", "control room with screens"]
+    assert units[3].text == "They drift a tiny bit every day."
 
 
-def test_empty_sections_dropped() -> None:
-    assert parse_script("## Empty\n\n## Real\ntext") == parse_script("## Real\ntext")
+def test_visual_lines_never_in_text() -> None:
+    for unit in parse_units(SCRIPT):
+        assert "[VISUAL" not in unit.text

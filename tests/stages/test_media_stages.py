@@ -20,6 +20,16 @@ Now you know.
 [VISUAL: person smiling at phone]
 """
 
+NARRATION = {
+    "total_seconds": 20.0,
+    "units": [
+        {"index": 0, "section": "Hook", "cues": ["satellite orbiting earth"],
+         "file": "narration/unit_000.mp3", "seconds": 14.0},
+        {"index": 1, "section": "Payoff", "cues": ["person smiling at phone"],
+         "file": "narration/unit_001.mp3", "seconds": 6.0},
+    ],
+}
+
 
 @pytest.fixture
 def ws(settings: Settings) -> Workspace:
@@ -37,22 +47,41 @@ class FakeTTS:
         out_file.write_bytes(b"fake-mp3")
 
 
-class FakeImages:
-    def fetch(self, query: str, out_file: Path) -> dict | None:
+class FakeMedia:
+    """Video for 'satellite' queries, photo otherwise. Tracks exclude sets."""
+
+    def __init__(self) -> None:
+        self.counter = 0
+        self.excludes_seen: list[set[str]] = []
+
+    def fetch_video(
+        self, query: str, out_file: Path, exclude: set[str] | None = None
+    ) -> dict | None:
+        self.excludes_seen.append(set(exclude or set()))
+        if "satellite" not in query:
+            return None
+        self.counter += 1
+        out_file.write_bytes(b"fake-mp4")
+        return {"media_id": f"video:{self.counter}", "url": "u", "photographer": "T"}
+
+    def fetch_image(
+        self, query: str, out_file: Path, exclude: set[str] | None = None
+    ) -> dict | None:
+        self.counter += 1
         out_file.write_bytes(b"fake-jpg")
-        return {"url": "https://pexels.com/x", "photographer": "Test"}
+        return {"media_id": f"photo:{self.counter}", "url": "u", "photographer": "T"}
 
 
-def test_narration_stage(
+def test_narration_stage_per_unit(
     ws: Workspace, settings: Settings, secrets: Secrets, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr("yt_factory.stages.narration._mp3_duration", lambda p: 12.5)
+    monkeypatch.setattr("yt_factory.stages.narration._mp3_duration", lambda p: 5.0)
     tts = FakeTTS()
     NarrationStage(tts=tts).run(ws, settings, secrets)
     index = json.loads(ws.file("narration.json").read_text())
-    assert index["total_seconds"] == 25.0
-    assert len(index["sections"]) == 2
-    assert (ws.path / index["sections"][0]["file"]).exists()
+    assert index["total_seconds"] == 10.0
+    assert len(index["units"]) == 2
+    assert index["units"][0]["cues"] == ["satellite orbiting earth"]
     assert "[VISUAL" not in tts.texts[0]
 
 
@@ -62,16 +91,31 @@ def test_narration_requires_script(settings: Settings, secrets: Secrets) -> None
         NarrationStage(tts=FakeTTS()).run(ws, settings, secrets)
 
 
-def test_visuals_stage(ws: Workspace, settings: Settings, secrets: Secrets) -> None:
+def test_visuals_fetches_per_unit_with_dedup(
+    ws: Workspace, settings: Settings, secrets: Secrets
+) -> None:
+    ws.file("narration.json").write_text(json.dumps(NARRATION))
+    # unit 0 is 14s -> ceil(14/6)=3 clips; unit 1 is 6s -> 1 clip
     queries = [
-        {"id": "00_0", "query": "satellite space"},
-        {"id": "01_0", "query": "person smiling phone"},
+        {"unit": 0, "queries": ["satellite launch", "satellite dish", "satellite orbit"]},
+        {"unit": 1, "queries": ["person smiling phone"]},
     ]
-    VisualsStage(llm=FakeLLM(data=queries), images=FakeImages()).run(ws, settings, secrets)
+    media = FakeMedia()
+    VisualsStage(llm=FakeLLM(data=queries), images=media).run(ws, settings, secrets)
     index = json.loads(ws.file("visuals.json").read_text())
-    assert len(index) == 2
-    assert index[0]["query"] == "satellite space"
-    assert (ws.path / index[0]["file"]).exists()
+    assert len(index) == 4
+    assert [v["unit"] for v in index] == [0, 0, 0, 1]
+    assert [v["type"] for v in index] == ["video", "video", "video", "image"]
+    # dedup: later fetches must carry previously used ids
+    assert media.excludes_seen[-1]  # non-empty exclude set by the last call
+    assert len({v["attribution"]["media_id"] for v in index}) == 4
+
+
+def test_visuals_requires_narration(
+    ws: Workspace, settings: Settings, secrets: Secrets
+) -> None:
+    with pytest.raises(StageError, match="narration.json missing"):
+        VisualsStage(llm=FakeLLM(data=[]), images=FakeMedia()).run(ws, settings, secrets)
 
 
 def test_thumbnail_stage(
@@ -81,9 +125,9 @@ def test_thumbnail_stage(
 
     write_topic(ws, topic_brief)
     visuals_dir = ws.dir("visuals")
-    Image.new("RGB", (800, 600), (10, 80, 160)).save(visuals_dir / "00_0.jpg")
+    Image.new("RGB", (800, 600), (10, 80, 160)).save(visuals_dir / "u000_0.jpg")
     ws.file("visuals.json").write_text(
-        json.dumps([{"file": "visuals/00_0.jpg"}])
+        json.dumps([{"file": "visuals/u000_0.jpg", "type": "image"}])
     )
     ThumbnailStage().run(ws, settings, secrets)
     thumb = Image.open(ws.file("thumbnail.png"))
