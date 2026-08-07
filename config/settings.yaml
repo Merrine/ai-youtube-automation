@@ -18,7 +18,8 @@ video:
   fps: 30
 
 providers:
-  llm: claude
+  llm: gemini
+  llm_model: gemini-flash-latest
   tts: local        # local | elevenlabs | openai
   images: pexels
 

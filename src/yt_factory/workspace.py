@@ -6,7 +6,6 @@ which is what makes the pipeline resumable and individually re-runnable.
 
 from __future__ import annotations
 
-import json
 import re
 from datetime import UTC, datetime
 from enum import StrEnum

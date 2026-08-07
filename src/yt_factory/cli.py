@@ -33,9 +33,34 @@ def _init() -> None:
 
 
 @app.command()
-def new(topic: str = typer.Option(..., "--topic", help="Video topic")) -> None:
-    """Create a new video workspace for TOPIC."""
+def new(
+    topic: str | None = typer.Option(None, "--topic", help="Video topic (omit to auto-generate)"),
+) -> None:
+    """Create a new video workspace. Without --topic, the LLM suggests one."""
     settings = load_settings()
+    if topic is None:
+        from yt_factory.stages.topic import generate_candidates
+
+        history = [
+            m.topic
+            for w in Workspace.list_all(settings.paths.videos_dir)
+            if (m := w.manifest()).topic
+        ]
+        console.print("[dim]No topic given — asking the LLM for candidates...[/dim]")
+        candidates = generate_candidates(settings, load_secrets(), history)
+        table = Table(title="topic candidates")
+        table.add_column("#")
+        table.add_column("topic")
+        table.add_column("lane")
+        table.add_column("score")
+        table.add_column("hook")
+        for i, c in enumerate(candidates[:10], 1):
+            table.add_row(
+                str(i), c["topic"], c.get("lane", ""), str(c.get("score", "")), c.get("hook", "")
+            )
+        console.print(table)
+        topic = candidates[0]["topic"]
+        console.print(f"Picking top candidate: [bold]{topic}[/bold]")
     ws = Workspace.create(settings.paths.videos_dir, topic, STAGE_NAMES)
     console.print(f"[green]Created[/green] workspace [bold]{ws.video_id}[/bold]")
     console.print(f"Next: [bold]ytf run {ws.video_id}[/bold]")
@@ -44,7 +69,7 @@ def new(topic: str = typer.Option(..., "--topic", help="Video topic")) -> None:
 @app.command()
 def run(
     video_id: str,
-    until: str | None = typer.Option(None, help=f"Stop after this stage ({', '.join(STAGE_NAMES)})"),
+    until: str | None = typer.Option(None, help="Stop after this stage"),
     ignore_gates: bool = typer.Option(False, help="Do not pause at review gates"),
 ) -> None:
     """Run pending pipeline stages for VIDEO_ID."""
@@ -59,7 +84,9 @@ def run(
         )
         raise typer.Exit(0) from None
     except Exception:
-        console.print(f"[red]Stage failed.[/red] See log; retry with [bold]ytf run {video_id}[/bold].")
+        console.print(
+            f"[red]Stage failed.[/red] See log; retry with [bold]ytf run {video_id}[/bold]."
+        )
         raise typer.Exit(1) from None
     console.print("[green]All requested stages complete.[/green]")
 

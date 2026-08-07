@@ -34,6 +34,7 @@ class VideoConfig(BaseModel):
 
 class ProvidersConfig(BaseModel):
     llm: str
+    llm_model: str
     tts: str
     images: str
 
@@ -59,6 +60,7 @@ class Secrets(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     anthropic_api_key: str = ""
+    gemini_api_key: str = ""
     elevenlabs_api_key: str = ""
     openai_api_key: str = ""
     pexels_api_key: str = ""

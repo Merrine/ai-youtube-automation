@@ -1,8 +1,7 @@
-"""Placeholder stages proving the pipeline skeleton end to end.
+"""Placeholder stages for phases not yet built (media, assembly, upload).
 
-Each will be replaced by a real implementation in Phases 2-5.
-Until then, each writes a small marker artifact so the orchestration,
-manifest updates, gates, and resume logic can be exercised for real.
+Each writes a small marker artifact so orchestration, gates, and resume
+logic stay exercisable end to end. Replaced in Phases 3-5.
 """
 
 from __future__ import annotations
@@ -26,18 +25,6 @@ class _PlaceholderStage(Stage):
         )
 
 
-class TopicStage(_PlaceholderStage):
-    name = "topic"
-
-
-class ResearchStage(_PlaceholderStage):
-    name = "research"
-
-
-class ScriptStage(_PlaceholderStage):
-    name = "script"
-
-
 class NarrationStage(_PlaceholderStage):
     name = "narration"
 
@@ -52,10 +39,6 @@ class AssemblyStage(_PlaceholderStage):
 
 class ThumbnailStage(_PlaceholderStage):
     name = "thumbnail"
-
-
-class MetadataStage(_PlaceholderStage):
-    name = "metadata"
 
 
 class UploadStage(_PlaceholderStage):
